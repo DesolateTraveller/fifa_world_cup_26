@@ -563,7 +563,7 @@ def _live_section():
                     _next_match_time = None
                     
             st.markdown("---")
-            st.markdown('<h3 style="text-align:center; color:#FFD700; font-size:1.8rem; font-weight:800; text-shadow:0 2px 4px rgba(0,0,0,0.3);">Next Match</h3>', unsafe_allow_html=True)
+            #st.markdown('<h3 style="text-align:center; color:#FFD700; font-size:1.8rem; font-weight:800; text-shadow:0 2px 4px rgba(0,0,0,0.3);">Next Match</h3>', unsafe_allow_html=True)
             
             _target_iso = ""
             _countdown_active = False
@@ -706,55 +706,60 @@ except Exception:
 # Render the auto-refreshing fragment
 _live_section()
 
-# --- Static content below (only reruns on full page load) ---
-# Full schedule expander
-_upcoming_static = get_upcoming_matches()
-if _upcoming_static and len(_upcoming_static) > 1:
-    # Added defensive 'if m' check to prevent crashes if API ever returns unexpected data
-    _schedule = [m for m in _upcoming_static[1:] if m and "Winner" not in m.get("team_1_name", "") and "Winner" not in m.get("team_2_name", "")]
-    if _schedule:
-        with st.expander("📅 Full Upcoming Schedule"):
-            schedule_data = []
-            for m in _schedule:
-                g = _get_group(m) or ""
+col_1, col_space, col_2 = st.columns([0.45,0.1,0.45])
+
+with col_1:
+    
+    # Full schedule expander
+    _upcoming_static = get_upcoming_matches()
+    if _upcoming_static and len(_upcoming_static) > 1:
+        # Added defensive 'if m' check to prevent crashes if API ever returns unexpected data
+        _schedule = [m for m in _upcoming_static[1:] if m and "Winner" not in m.get("team_1_name", "") and "Winner" not in m.get("team_2_name", "")]
+        if _schedule:
+            with st.expander("📅 Full Upcoming Schedule"):
+                schedule_data = []
+                for m in _schedule:
+                    g = _get_group(m) or ""
+                    date_str = m.get("date", "")
+                    time_str = m.get("time_et", "").replace(" ET", "")
+                    if time_str:
+                        date_str += f" {time_str}"
+                    schedule_data.append({
+                        "Date": date_str,
+                        "Match": f"{m['team_1_name']} vs {m['team_2_name']}",
+                        "Group": g,
+                    })
+                df = pd.DataFrame(schedule_data)
+                st.dataframe(
+                    df,
+                    use_container_width=True,
+                    hide_index=True,
+                    height=400,)
+        #st.markdown("---")
+
+# Past Matches section (all results as dataframe in expander)
+
+with col_2:
+    
+    _all_results_static = get_all_results()
+    if _all_results_static:
+        with st.expander("📋 Past Match Results"):
+            results_data = []
+            for m in reversed(_all_results_static):  # most recent first
+                if not m:
+                    continue
+                g = _get_group(m) or m.get("stage", "")
                 date_str = m.get("date", "")
-                time_str = m.get("time_et", "").replace(" ET", "")
-                if time_str:
-                    date_str += f" {time_str}"
-                schedule_data.append({
+                results_data.append({
                     "Date": date_str,
-                    "Match": f"{m['team_1_name']} vs {m['team_2_name']}",
+                    "Result": f"{m['team_1_name']} {m['team_1_score']} – {m['team_2_score']} {m['team_2_name']}",
                     "Group": g,
                 })
-            df = pd.DataFrame(schedule_data)
+            df = pd.DataFrame(results_data)
             st.dataframe(
                 df,
                 use_container_width=True,
                 hide_index=True,
                 height=400,
             )
-        st.markdown("---")
-
-# Past Matches section (all results as dataframe in expander)
-_all_results_static = get_all_results()
-if _all_results_static:
-    with st.expander("📋 Past Match Results"):
-        results_data = []
-        for m in reversed(_all_results_static):  # most recent first
-            if not m:
-                continue
-            g = _get_group(m) or m.get("stage", "")
-            date_str = m.get("date", "")
-            results_data.append({
-                "Date": date_str,
-                "Result": f"{m['team_1_name']} {m['team_1_score']} – {m['team_2_score']} {m['team_2_name']}",
-                "Group": g,
-            })
-        df = pd.DataFrame(results_data)
-        st.dataframe(
-            df,
-            use_container_width=True,
-            hide_index=True,
-            height=400,
-        )
-    st.markdown("---")
+    #st.markdown("---")
