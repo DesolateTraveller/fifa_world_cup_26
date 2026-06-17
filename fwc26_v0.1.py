@@ -85,6 +85,7 @@ box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 <div class="title-large">⚽ FIFA World Cup 2026</div>
 </div>
 """,unsafe_allow_html=True)
+
 st.markdown(
 """
 <style>
@@ -98,6 +99,7 @@ color: #333;z-index: 100;}
 <p>© 2026 | Created by : <span class="highlight">Avijit Chakraborty</span> <a href="mailto:avijit.mba18@gmail.com"> 📩 </a> | <span class="highlight">Thank you for visiting the app | Unauthorized uses or copying is strictly prohibited | For best view of the app, please zoom out the browser to 75%.</span> </p>
 </div>
 """,unsafe_allow_html=True)
+
 #---------------------------------------------------------------------------------------------------------------------------------
 ### Connections
 #---------------------------------------------------------------------------------------------------------------------------------
@@ -314,6 +316,7 @@ def _get_group(match):
     return f"Group {g}" if g else ""
 
 @st.fragment(run_every=10)
+@st.fragment(run_every=10)
 def _live_section():
     """Auto-refreshing section: stats pills + live match or countdown."""
     _et = timezone("US/Eastern")
@@ -341,7 +344,7 @@ def _live_section():
         unsafe_allow_html=True,
     )
     
-    # Count-up animation JS — using st.html (replaces deprecated components.v1.html)
+    # Count-up animation JS
     st.html(
         '''<script>
         (function(){
@@ -383,6 +386,7 @@ def _live_section():
             live_matches = [st.session_state["_last_live"]]
             
     if live_matches:
+        # --- LIVE MATCH CARD ---
         match = live_matches[0]
         if match["status"] == "HALFTIME":
             badge_html = '<span style="background:#FFD700; color:#000; padding:4px 16px; border-radius:16px; font-size:1rem; font-weight:700;">HALF TIME</span>'
@@ -415,14 +419,16 @@ def _live_section():
             .live-badge {{ display:inline-block; background:#FF4B4B; color:white; padding:4px 16px; border-radius:16px; font-size:1rem; font-weight:700; animation:pulse 1.5s infinite; letter-spacing:1px; }}
             .live-card .desktop-layout {{ display:flex; }}
             .live-card .mobile-layout {{ display:none; }}
+            .live-card .card-header {{ background:linear-gradient(135deg, #0056b3 0%, #0d4a96 50%, #1a6bb5 100%); border-radius:20px 20px 0 0; padding:1rem 2rem; text-align:center; }}
             @media(max-width:768px){{
             .live-card{{padding:1rem!important}}
             .live-card .desktop-layout {{ display:none; }}
             .live-card .mobile-layout {{ display:block; }}
             }}
             </style>
-            <div class="live-card" style="background:rgba(17,86,117,0.25); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; padding:2rem 3rem; margin:0; border:1px solid rgba(41,181,232,0.25); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-            <div style="text-align:center; margin-bottom:0.8rem;">{badge_html}</div>
+            <div class="live-card" style="background:rgba(17,86,117,0.25); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; margin:0; border:1px solid rgba(41,181,232,0.25); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; overflow:hidden;">
+            <div class="card-header">{badge_html}</div>
+            <div style="padding:2rem 3rem;">
             <div class="desktop-layout" style="justify-content:space-between; align-items:center;">
             <div style="text-align:center; flex:1;">
             <img src="{match['team_1_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
@@ -446,6 +452,7 @@ def _live_section():
             <p style="font-size:2.5rem; font-weight:900; color:#fff; margin:0; line-height:1;">{match['team_1_score']} – {match['team_2_score']}</p>
             <p id="match-clock-m" style="font-size:1rem; font-weight:700; color:#FFD700; margin:0; font-variant-numeric:tabular-nums;"></p>
             <p style="font-size:0.7rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{" &nbsp;|&nbsp; ".join(info_parts)}</p>
+            </div>
             </div>
             </div>
             <script>
@@ -486,11 +493,11 @@ def _live_section():
                     if ev["type"] == "goal":
                         icon = "⚽"
                     elif ev["type"] == "own_goal":
-                        icon = "⚽🔴"
+                        icon = "🔴"
                     elif ev["type"] == "red":
-                        icon = "🟥"
+                        icon = ""
                     else:
-                        icon = "🟨"
+                        icon = ""
                     side_color = "#ffffff" if ev["side"] == 1 else "#e0e0e0"
                     _event_items.append(
                         f'<span style="display:inline-block; margin:0.15rem 0.3rem; padding:0.2rem 0.5rem; '
@@ -543,133 +550,145 @@ def _live_section():
                 f'</div>',
                 unsafe_allow_html=True,
             )
-        else:
-            # --- NEXT MATCH COUNTDOWN (Stadium Card) ---
-            _upcoming = get_upcoming_matches()
-            if _upcoming:
-                next_match = _upcoming[0]
-                
-                _next_match_time = None
-                if next_match and next_match.get("utc_iso"):
-                    try:
-                        _next_match_time = datetime.fromisoformat(next_match["utc_iso"]).astimezone(_et)
-                    except Exception:
-                        _next_match_time = None
-                        
-                st.markdown("---")
-                st.markdown('<h3 style="text-align:center;">Next Match</h3>', unsafe_allow_html=True)
-                
-                _target_iso = ""
-                _countdown_active = False
-                if _next_match_time:
-                    _target_iso = _next_match_time.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-                    _countdown_active = _next_match_time > _now
+    else:
+        # --- NEXT MATCH COUNTDOWN (when no live matches) ---
+        _upcoming = get_upcoming_matches()
+        if _upcoming:
+            next_match = _upcoming[0]
+            
+            _next_match_time = None
+            if next_match and next_match.get("utc_iso"):
+                try:
+                    _next_match_time = datetime.fromisoformat(next_match["utc_iso"]).astimezone(_et)
+                except Exception:
+                    _next_match_time = None
                     
-                _info_line1 = next_match.get("date", "")
-                if next_match.get("time_et"):
-                    _info_line1 += f' at {next_match["time_et"]}'
-                    
-                _info_line2_parts = []
-                group_name = _get_group(next_match)
-                if group_name:
-                    _info_line2_parts.append(group_name)
-                if next_match.get("venue"):
-                    venue_str = next_match["venue"]
-                    if next_match.get("city"):
-                        venue_str += f', {next_match["city"]}'
-                    _info_line2_parts.append(venue_str)
-                _info_line2 = " | ".join(_info_line2_parts)
+            st.markdown("---")
+            st.markdown('<h3 style="text-align:center;">Next Match</h3>', unsafe_allow_html=True)
+            
+            _target_iso = ""
+            _countdown_active = False
+            if _next_match_time:
+                _target_iso = _next_match_time.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                _countdown_active = _next_match_time > _now
                 
-                if _countdown_active:
-                    st.html(
-                        f'''<style>
-                        .cd-card .desktop-layout {{ display:flex; }}
-                        .cd-card .mobile-layout {{ display:none; }}
-                        @media(max-width:768px){{
-                        .cd-card{{padding:1rem!important}}
-                        .cd-card .desktop-layout {{ display:none; }}
-                        .cd-card .mobile-layout {{ display:block; }}
-                        }}
-                        </style>
-                        <div class="cd-card" style="background:rgba(17,86,117,0.25); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; padding:2rem 3rem; margin:0; border:1px solid rgba(41,181,232,0.25); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-                        <div class="desktop-layout" style="justify-content:space-between; align-items:center;">
-                        <div style="text-align:center; flex:1;">
-                        <img src="{next_match['team_1_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
-                        <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_1_name']}</span></div>
-                        <div style="text-align:center; flex:1;">
-                        <p id="cd" style="font-size:3.5rem; font-weight:900; color:#FFD700; margin:0; line-height:1; font-variant-numeric:tabular-nums;">--:--:--</p>
-                        <p style="font-size:0.85rem; color:#e0e0e0; margin:0.3rem 0 0 0;">{_info_line1}</p>
-                        <p style="font-size:0.85rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p></div>
-                        <div style="text-align:center; flex:1;">
-                        <img src="{next_match['team_2_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
-                        <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_2_name']}</span></div>
-                        </div>
-                        <div class="mobile-layout" style="text-align:center;">
-                        <div style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-                        <img src="{next_match['team_1_logo']}" style="height:1.8rem;">
-                        <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_1_name']}</span>
-                        <span style="font-size:0.8rem; color:#e0e0e0;">vs</span>
-                        <img src="{next_match['team_2_logo']}" style="height:1.8rem;">
-                        <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_2_name']}</span>
-                        </div>
-                        <p id="cd-m" style="font-size:2.2rem; font-weight:900; color:#FFD700; margin:0; line-height:1.2; font-variant-numeric:tabular-nums;">--:--:--</p>
-                        <p style="font-size:0.7rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{_info_line1}</p>
-                        <p style="font-size:0.7rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p>
-                        </div>
-                        </div>
-                        <script>
-                        (function(){{
-                        var target=new Date("{_target_iso}").getTime();
-                        var els=[document.getElementById("cd"),document.getElementById("cd-m")];
-                        function tick(){{
-                        var diff=Math.max(0,Math.floor((target-Date.now())/1000));
-                        var d=Math.floor(diff/86400),h=Math.floor((diff%86400)/3600),m=Math.floor((diff%3600)/60),s=diff%60;
-                        var t=d>0?d+"d "+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0"):String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
-                        els.forEach(function(e){{if(e)e.textContent=t;}});
-                        }}
-                        tick();setInterval(tick,1000);
-                        }})();
-                        </script>'''
-                    )
-                else:
-                    st.html(
-                        f'''<style>
-                        @keyframes kickPulse {{ 0%{{opacity:1}} 50%{{opacity:0.5}} 100%{{opacity:1}} }}
-                        .ko-card .desktop-layout {{ display:flex; }}
-                        .ko-card .mobile-layout {{ display:none; }}
-                        @media(max-width:768px){{
-                        .ko-card{{padding:1rem!important}}
-                        .ko-card .desktop-layout {{ display:none; }}
-                        .ko-card .mobile-layout {{ display:block; }}
-                        }}
-                        </style>
-                        <div class="ko-card" style="background:rgba(17,86,117,0.25); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; padding:2rem 3rem; margin:0; border:1px solid rgba(41,181,232,0.25); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-                        <div class="desktop-layout" style="justify-content:space-between; align-items:center;">
-                        <div style="text-align:center; flex:1;">
-                        <img src="{next_match['team_1_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
-                        <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_1_name']}</span></div>
-                        <div style="text-align:center; flex:1;">
-                        <p style="font-size:2rem; font-weight:900; color:#FFD700; margin:0; line-height:1; animation:kickPulse 1.5s infinite;">&#9917; KICKOFF</p>
-                        <p style="font-size:0.85rem; color:#e0e0e0; margin:0.3rem 0 0 0;">{_info_line1}</p>
-                        <p style="font-size:0.85rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p></div>
-                        <div style="text-align:center; flex:1;">
-                        <img src="{next_match['team_2_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
-                        <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_2_name']}</span></div>
-                        </div>
-                        <div class="mobile-layout" style="text-align:center;">
-                        <p style="font-size:1.4rem; font-weight:900; color:#FFD700; margin:0 0 0.5rem 0; animation:kickPulse 1.5s infinite;">&#9917; KICKOFF</p>
-                        <div style="display:flex; justify-content:center; align-items:center; gap:0.8rem; margin-bottom:0.3rem;">
-                        <img src="{next_match['team_1_logo']}" style="height:1.8rem;">
-                        <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_1_name']}</span>
-                        <span style="font-size:0.8rem; color:#e0e0e0;">vs</span>
-                        <img src="{next_match['team_2_logo']}" style="height:1.8rem;">
-                        <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_2_name']}</span>
-                        </div>
-                        <p style="font-size:0.7rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{_info_line1}</p>
-                        <p style="font-size:0.7rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p>
-                        </div>
-                        </div>'''
-                    )
+            _info_line1 = next_match.get("date", "")
+            if next_match.get("time_et"):
+                _info_line1 += f' at {next_match["time_et"]}'
+                
+            _info_line2_parts = []
+            group_name = _get_group(next_match)
+            if group_name:
+                _info_line2_parts.append(group_name)
+            if next_match.get("venue"):
+                venue_str = next_match["venue"]
+                if next_match.get("city"):
+                    venue_str += f', {next_match["city"]}'
+                _info_line2_parts.append(venue_str)
+            _info_line2 = " | ".join(_info_line2_parts)
+            
+            if _countdown_active:
+                st.html(
+                    f'''<style>
+                    .cd-card .desktop-layout {{ display:flex; }}
+                    .cd-card .mobile-layout {{ display:none; }}
+                    .cd-card .card-header {{ background:linear-gradient(135deg, #0056b3 0%, #0d4a96 50%, #1a6bb5 100%); border-radius:20px 20px 0 0; padding:1rem 2rem; text-align:center; }}
+                    @media(max-width:768px){{
+                    .cd-card{{padding:1rem!important}}
+                    .cd-card .desktop-layout {{ display:none; }}
+                    .cd-card .mobile-layout {{ display:block; }}
+                    }}
+                    </style>
+                    <div class="cd-card" style="background:rgba(17,86,117,0.25); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; margin:0; border:1px solid rgba(41,181,232,0.25); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; overflow:hidden;">
+                    <div class="card-header">
+                    <p style="font-size:1.2rem; font-weight:700; color:#FFD700; margin:0; letter-spacing:1px;">⏰ NEXT MATCH COUNTDOWN</p>
+                    </div>
+                    <div style="padding:2rem 3rem;">
+                    <div class="desktop-layout" style="justify-content:space-between; align-items:center;">
+                    <div style="text-align:center; flex:1;">
+                    <img src="{next_match['team_1_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
+                    <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_1_name']}</span></div>
+                    <div style="text-align:center; flex:1;">
+                    <p id="cd" style="font-size:3.5rem; font-weight:900; color:#FFD700; margin:0; line-height:1; font-variant-numeric:tabular-nums;">--:--:--</p>
+                    <p style="font-size:0.85rem; color:#e0e0e0; margin:0.3rem 0 0 0;">{_info_line1}</p>
+                    <p style="font-size:0.85rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p></div>
+                    <div style="text-align:center; flex:1;">
+                    <img src="{next_match['team_2_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
+                    <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_2_name']}</span></div>
+                    </div>
+                    <div class="mobile-layout" style="text-align:center;">
+                    <div style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+                    <img src="{next_match['team_1_logo']}" style="height:1.8rem;">
+                    <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_1_name']}</span>
+                    <span style="font-size:0.8rem; color:#e0e0e0;">vs</span>
+                    <img src="{next_match['team_2_logo']}" style="height:1.8rem;">
+                    <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_2_name']}</span>
+                    </div>
+                    <p id="cd-m" style="font-size:2.2rem; font-weight:900; color:#FFD700; margin:0; line-height:1.2; font-variant-numeric:tabular-nums;">--:--:--</p>
+                    <p style="font-size:0.7rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{_info_line1}</p>
+                    <p style="font-size:0.7rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p>
+                    </div>
+                    </div>
+                    </div>
+                    <script>
+                    (function(){{
+                    var target=new Date("{_target_iso}").getTime();
+                    var els=[document.getElementById("cd"),document.getElementById("cd-m")];
+                    function tick(){{
+                    var diff=Math.max(0,Math.floor((target-Date.now())/1000));
+                    var d=Math.floor(diff/86400),h=Math.floor((diff%86400)/3600),m=Math.floor((diff%3600)/60),s=diff%60;
+                    var t=d>0?d+"d "+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0"):String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+                    els.forEach(function(e){{if(e)e.textContent=t;}});
+                    }}
+                    tick();setInterval(tick,1000);
+                    }})();
+                    </script>'''
+                )
+            else:
+                st.html(
+                    f'''<style>
+                    @keyframes kickPulse {{ 0%{{opacity:1}} 50%{{opacity:0.5}} 100%{{opacity:1}} }}
+                    .ko-card .desktop-layout {{ display:flex; }}
+                    .ko-card .mobile-layout {{ display:none; }}
+                    .ko-card .card-header {{ background:linear-gradient(135deg, #0056b3 0%, #0d4a96 50%, #1a6bb5 100%); border-radius:20px 20px 0 0; padding:1rem 2rem; text-align:center; }}
+                    @media(max-width:768px){{
+                    .ko-card{{padding:1rem!important}}
+                    .ko-card .desktop-layout {{ display:none; }}
+                    .ko-card .mobile-layout {{ display:block; }}
+                    }}
+                    </style>
+                    <div class="ko-card" style="background:rgba(17,86,117,0.25); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; margin:0; border:1px solid rgba(41,181,232,0.25); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; overflow:hidden;">
+                    <div class="card-header">
+                    <p style="font-size:1.2rem; font-weight:700; color:#FFD700; margin:0; letter-spacing:1px;">⚽ KICKOFF IMMINENT</p>
+                    </div>
+                    <div style="padding:2rem 3rem;">
+                    <div class="desktop-layout" style="justify-content:space-between; align-items:center;">
+                    <div style="text-align:center; flex:1;">
+                    <img src="{next_match['team_1_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
+                    <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_1_name']}</span></div>
+                    <div style="text-align:center; flex:1;">
+                    <p style="font-size:2rem; font-weight:900; color:#FFD700; margin:0; line-height:1; animation:kickPulse 1.5s infinite;">&#9917; KICKOFF</p>
+                    <p style="font-size:0.85rem; color:#e0e0e0; margin:0.3rem 0 0 0;">{_info_line1}</p>
+                    <p style="font-size:0.85rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p></div>
+                    <div style="text-align:center; flex:1;">
+                    <img src="{next_match['team_2_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
+                    <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_2_name']}</span></div>
+                    </div>
+                    <div class="mobile-layout" style="text-align:center;">
+                    <p style="font-size:1.4rem; font-weight:900; color:#FFD700; margin:0 0 0.5rem 0; animation:kickPulse 1.5s infinite;">&#9917; KICKOFF</p>
+                    <div style="display:flex; justify-content:center; align-items:center; gap:0.8rem; margin-bottom:0.3rem;">
+                    <img src="{next_match['team_1_logo']}" style="height:1.8rem;">
+                    <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_1_name']}</span>
+                    <span style="font-size:0.8rem; color:#e0e0e0;">vs</span>
+                    <img src="{next_match['team_2_logo']}" style="height:1.8rem;">
+                    <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_2_name']}</span>
+                    </div>
+                    <p style="font-size:0.7rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{_info_line1}</p>
+                    <p style="font-size:0.7rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p>
+                    </div>
+                    </div>
+                    </div>'''
+                )
 
 #---------------------------------------------------------------------------------------------------------------------------------
 ### Main app
