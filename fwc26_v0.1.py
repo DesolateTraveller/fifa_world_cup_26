@@ -251,18 +251,6 @@ def get_all_results():
         return results
     except Exception:
         return []
-    
-#---------------------------------------------------------------------------------------------------------------------------------
-### Main app
-#---------------------------------------------------------------------------------------------------------------------------------
-
-
-# Load team-to-group mapping from Snowflake
-try:
-    _teams_df = run_query("SELECT TEAM_NAME, GROUP_LETTER FROM TEAMS")
-    _group_map = dict(zip(_teams_df["TEAM_NAME"], _teams_df["GROUP_LETTER"]))
-except Exception:
-    _group_map = {}
 
 
 def _get_group(match):
@@ -270,7 +258,6 @@ def _get_group(match):
     if not g:
         g = _group_map.get(match.get("team_2_name"))
     return f"Group {g}" if g else ""
-
 
 @st.fragment(run_every=10)
 def _live_section():
@@ -663,7 +650,17 @@ def _live_section():
                     </div>''',
                     height=180,
                 )
+                    
+#---------------------------------------------------------------------------------------------------------------------------------
+### Main app
+#---------------------------------------------------------------------------------------------------------------------------------
 
+# Load team-to-group mapping from Snowflake
+try:
+    _teams_df = run_query("SELECT TEAM_NAME, GROUP_LETTER FROM TEAMS")
+    _group_map = dict(zip(_teams_df["TEAM_NAME"], _teams_df["GROUP_LETTER"]))
+except Exception:
+    _group_map = {}
 
 # Render the auto-refreshing fragment
 _live_section()
