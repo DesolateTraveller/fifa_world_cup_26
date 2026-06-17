@@ -1,0 +1,10 @@
+[theme]
+base = "dark"
+primaryColor = "#115675"
+backgroundColor = "#29B5E8"
+textColor = "#ffffff"
+font = "sans serif"
+baseFontSize = 17
+
+[server]
+port = 8501
