@@ -10,8 +10,6 @@ import requests
 #----------------------------------------
 import numpy as np
 import pandas as pd
-#import seaborn as sns
-#import matplotlib.pyplot as plt
 #----------------------------------------
 import sys, os
 from io import BytesIO, StringIO
@@ -21,7 +19,6 @@ import pytz
 from pytz import timezone
 #----------------------------------------
 import snowflake.connector
-import streamlit.components.v1 as components
 #---------------------------------------------------------------------------------------------------------------------------------
 # Page Configuration
 #---------------------------------------------------------------------------------------------------------------------------------
@@ -205,7 +202,7 @@ def _normalize_espn(event, competition, status):
     venue_name = venue.get("fullName", "") if isinstance(venue, dict) else str(venue)
     city_name = venue.get("address", {}).get("city", "") if isinstance(venue, dict) and isinstance(venue.get("address"), dict) else ""
 
-    # --- THIS RETURN STATEMENT WAS MISSING ---
+    # --- THIS RETURN STATEMENT WAS MISSING IN YOUR FILE ---
     return {
         "team_1_name": home.get("team", {}).get("displayName", home.get("team", {}).get("shortDisplayName", "Team 1")),
         "team_2_name": away.get("team", {}).get("displayName", away.get("team", {}).get("shortDisplayName", "Team 2")),
@@ -309,6 +306,8 @@ def get_all_results():
         return []
 
 def _get_group(match):
+    if not match:
+        return ""
     g = _group_map.get(match.get("team_1_name"))
     if not g:
         g = _group_map.get(match.get("team_2_name"))
@@ -342,11 +341,11 @@ def _live_section():
         unsafe_allow_html=True,
     )
     
-    # Count-up animation JS
-    components.html(
+    # Count-up animation JS — using st.html (replaces deprecated components.v1.html)
+    st.html(
         '''<script>
         (function(){
-        var doc=window.parent.document;
+        var doc=document;
         var els=doc.querySelectorAll(".countup");
         if(!els.length)return;
         var duration=1500,stagger=1000;
@@ -365,8 +364,7 @@ def _live_section():
         }, i*stagger);
         });
         })();
-        </script>''',
-        height=0,
+        </script>'''
     )
     
     # Live match display (via ESPN API — real-time)
@@ -376,7 +374,7 @@ def _live_section():
     if live_matches:
         st.session_state["_last_live"] = live_matches[0]
     elif st.session_state.get("_last_live"):
-        _finished = {(r["team_1_name"], r["team_2_name"]) for r in get_all_results()}
+        _finished = {(r["team_1_name"], r["team_2_name"]) for r in get_all_results() if r}
         _cached = st.session_state["_last_live"]
         if (_cached["team_1_name"], _cached["team_2_name"]) in _finished or \
            (_cached["team_2_name"], _cached["team_1_name"]) in _finished:
@@ -411,7 +409,7 @@ def _live_section():
         _is_halftime = match["status"] == "HALFTIME"
         _display_clock = match.get("display_clock", "")
         
-        components.html(
+        st.html(
             f'''<style>
             @keyframes pulse {{ 0%{{opacity:1}} 50%{{opacity:0.5}} 100%{{opacity:1}} }}
             .live-badge {{ display:inline-block; background:#FF4B4B; color:white; padding:4px 16px; border-radius:16px; font-size:1rem; font-weight:700; animation:pulse 1.5s infinite; letter-spacing:1px; }}
@@ -461,8 +459,7 @@ def _live_section():
             if(halftime){{ show("HT"); }}
             else {{ show(displayClock+" \\u2022 "+halfLabel); }}
             }})();
-            </script>''',
-            height=220,
+            </script>'''
         )
         
         # --- Live Match Stats ---
@@ -584,7 +581,7 @@ def _live_section():
                 _info_line2 = " | ".join(_info_line2_parts)
                 
                 if _countdown_active:
-                    components.html(
+                    st.html(
                         f'''<style>
                         .cd-card .desktop-layout {{ display:flex; }}
                         .cd-card .mobile-layout {{ display:none; }}
@@ -632,11 +629,10 @@ def _live_section():
                         }}
                         tick();setInterval(tick,1000);
                         }})();
-                        </script>''',
-                        height=180,
+                        </script>'''
                     )
                 else:
-                    components.html(
+                    st.html(
                         f'''<style>
                         @keyframes kickPulse {{ 0%{{opacity:1}} 50%{{opacity:0.5}} 100%{{opacity:1}} }}
                         .ko-card .desktop-layout {{ display:flex; }}
@@ -672,8 +668,7 @@ def _live_section():
                         <p style="font-size:0.7rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{_info_line1}</p>
                         <p style="font-size:0.7rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p>
                         </div>
-                        </div>''',
-                        height=180,
+                        </div>'''
                     )
 
 #---------------------------------------------------------------------------------------------------------------------------------
@@ -694,7 +689,8 @@ _live_section()
 # Full schedule expander
 _upcoming_static = get_upcoming_matches()
 if _upcoming_static and len(_upcoming_static) > 1:
-    _schedule = [m for m in _upcoming_static[1:] if "Winner" not in m["team_1_name"] and "Winner" not in m["team_2_name"]]
+    # Added defensive 'if m' check to prevent crashes if API ever returns unexpected data
+    _schedule = [m for m in _upcoming_static[1:] if m and "Winner" not in m.get("team_1_name", "") and "Winner" not in m.get("team_2_name", "")]
     if _schedule:
         with st.expander("📅 Full Upcoming Schedule"):
             schedule_data = []
@@ -724,6 +720,8 @@ if _all_results_static:
     with st.expander("📋 Past Match Results"):
         results_data = []
         for m in reversed(_all_results_static):  # most recent first
+            if not m:
+                continue
             g = _get_group(m) or m.get("stage", "")
             date_str = m.get("date", "")
             results_data.append({
