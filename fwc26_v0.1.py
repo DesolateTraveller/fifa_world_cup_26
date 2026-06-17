@@ -316,7 +316,6 @@ def _get_group(match):
     return f"Group {g}" if g else ""
 
 @st.fragment(run_every=10)
-@st.fragment(run_every=10)
 def _live_section():
     """Auto-refreshing section: stats pills + live match or countdown."""
     _et = timezone("US/Eastern")
@@ -326,20 +325,20 @@ def _live_section():
     _days_left = _remaining_seconds // 86400
     _all_results = get_all_results()
     _matches_played = len(_all_results)
-    _games_remaining = 104 - _matches_played
+    _games_remaining = max(0, 104 - _matches_played)
     
-    # Tournament stats — metric pills (hidden on mobile via CSS)
-    _pill = 'display:inline-block; background:rgba(17,86,117,0.35); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(41,181,232,0.2); border-radius:20px; padding:0.4rem 1.2rem; margin:0.2rem 0.3rem; width:180px; text-align:center; white-space:nowrap;'
-    _pill_val = 'font-size:1.4rem; font-weight:900; color:#FFD700;'
-    _pill_lbl = 'font-size:0.75rem; color:#e0e0e0; text-transform:uppercase; letter-spacing:1px;'
+    # Tournament stats — metric pills with vibrant colors
+    _pill = 'display:inline-block; background:linear-gradient(135deg, #0056b3 0%, #0077cc 100%); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:2px solid #FFD700; border-radius:20px; padding:0.5rem 1.3rem; margin:0.2rem 0.4rem; width:190px; text-align:center; white-space:nowrap; box-shadow:0 4px 15px rgba(0,119,204,0.3);'
+    _pill_val = 'font-size:1.5rem; font-weight:900; color:#FFD700; text-shadow:0 2px 4px rgba(0,0,0,0.3);'
+    _pill_lbl = 'font-size:0.7rem; color:#ffffff; text-transform:uppercase; letter-spacing:1.5px; font-weight:600;'
     st.markdown(
         f'<style>@media(max-width:768px){{.desktop-pills{{display:none!important}}}}</style>'
-        f'<div class="desktop-pills" style="text-align:center; margin:0.5rem 0;">'
-        f'<p style="font-size:1.2rem; color:#FFD700; font-weight:800; margin:0 0 0.5rem 0; letter-spacing:1px;">11 June – 19 July 2026</p>'
-        f'<span style="{_pill}"><span class="countup" data-target="{_days_left}" style="{_pill_val}">0</span> <span style="{_pill_lbl}">days left</span></span>'
-        f'<span style="{_pill}"><span class="countup" data-target="{_games_remaining}" style="{_pill_val}">0</span> <span style="{_pill_lbl}">games left</span></span>'
-        f'<span style="{_pill}"><span class="countup" data-target="48" style="{_pill_val}">0</span> <span style="{_pill_lbl}">teams</span></span>'
-        f'<span style="{_pill}"><span class="countup" data-target="16" style="{_pill_val}">0</span> <span style="{_pill_lbl}">venues</span></span>'
+        f'<div class="desktop-pills" style="text-align:center; margin:0.8rem 0;">'
+        f'<p style="font-size:1.3rem; color:#FFD700; font-weight:800; margin:0 0 0.6rem 0; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,0.2);">11 June – 19 July 2026</p>'
+        f'<span style="{_pill}"><span class="countup" data-target="{_days_left}" style="{_pill_val}">0</span><br><span style="{_pill_lbl}">Days Left</span></span>'
+        f'<span style="{_pill}"><span class="countup" data-target="{_games_remaining}" style="{_pill_val}">0</span><br><span style="{_pill_lbl}">Games Left</span></span>'
+        f'<span style="{_pill}"><span class="countup" data-target="48" style="{_pill_val}">0</span><br><span style="{_pill_lbl}">Teams</span></span>'
+        f'<span style="{_pill}"><span class="countup" data-target="16" style="{_pill_val}">0</span><br><span style="{_pill_lbl}">Venues</span></span>'
         f'</div>',
         unsafe_allow_html=True,
     )
@@ -389,7 +388,7 @@ def _live_section():
         # --- LIVE MATCH CARD ---
         match = live_matches[0]
         if match["status"] == "HALFTIME":
-            badge_html = '<span style="background:#FFD700; color:#000; padding:4px 16px; border-radius:16px; font-size:1rem; font-weight:700;">HALF TIME</span>'
+            badge_html = '<span style="background:linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color:#000; padding:6px 20px; border-radius:20px; font-size:1.1rem; font-weight:700; box-shadow:0 4px 15px rgba(255,215,0,0.4);">HALF TIME</span>'
         else:
             badge_html = '<span class="live-badge">● LIVE</span>'
             
@@ -406,7 +405,7 @@ def _live_section():
             info_parts.append(venue_str)
             
         st.markdown("---")
-        st.markdown('<h3 style="text-align:center;">Current Match</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 style="text-align:center; color:#FFD700; font-size:1.8rem; font-weight:800; text-shadow:0 2px 4px rgba(0,0,0,0.3);">Current Match</h3>', unsafe_allow_html=True)
         
         _clock_secs = match.get("clock_seconds", 0)
         _period = match.get("period", 1)
@@ -416,42 +415,42 @@ def _live_section():
         st.html(
             f'''<style>
             @keyframes pulse {{ 0%{{opacity:1}} 50%{{opacity:0.5}} 100%{{opacity:1}} }}
-            .live-badge {{ display:inline-block; background:#FF4B4B; color:white; padding:4px 16px; border-radius:16px; font-size:1rem; font-weight:700; animation:pulse 1.5s infinite; letter-spacing:1px; }}
+            .live-badge {{ display:inline-block; background:linear-gradient(135deg, #FF4B4B 0%, #CC0000 100%); color:white; padding:6px 20px; border-radius:20px; font-size:1.1rem; font-weight:700; animation:pulse 1.5s infinite; letter-spacing:1px; box-shadow:0 4px 15px rgba(255,75,75,0.4); }}
             .live-card .desktop-layout {{ display:flex; }}
             .live-card .mobile-layout {{ display:none; }}
-            .live-card .card-header {{ background:linear-gradient(135deg, #0056b3 0%, #0d4a96 50%, #1a6bb5 100%); border-radius:20px 20px 0 0; padding:1rem 2rem; text-align:center; }}
+            .live-card .card-header {{ background:linear-gradient(135deg, #0056b3 0%, #0077cc 50%, #0099ff 100%); border-radius:20px 20px 0 0; padding:1.2rem 2rem; text-align:center; box-shadow:0 4px 20px rgba(0,119,204,0.3); }}
             @media(max-width:768px){{
             .live-card{{padding:1rem!important}}
             .live-card .desktop-layout {{ display:none; }}
             .live-card .mobile-layout {{ display:block; }}
             }}
             </style>
-            <div class="live-card" style="background:rgba(17,86,117,0.25); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; margin:0; border:1px solid rgba(41,181,232,0.25); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; overflow:hidden;">
+            <div class="live-card" style="background:linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; margin:0; border:2px solid #FFD700; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
             <div class="card-header">{badge_html}</div>
             <div style="padding:2rem 3rem;">
             <div class="desktop-layout" style="justify-content:space-between; align-items:center;">
             <div style="text-align:center; flex:1;">
-            <img src="{match['team_1_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
-            <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{match['team_1_name']}</span></div>
+            <img src="{match['team_1_logo']}" style="height:3.5rem; margin-bottom:0.5rem; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));"><br>
+            <span style="font-size:1.4rem; font-weight:700; color:#ffffff; text-shadow:0 2px 4px rgba(0,0,0,0.3);">{match['team_1_name']}</span></div>
             <div style="text-align:center; flex:1;">
-            <p class="score" style="font-size:4rem; font-weight:900; color:#ffffff; margin:0; line-height:1;">{match['team_1_score']} – {match['team_2_score']}</p>
-            <p id="match-clock" style="font-size:1.1rem; font-weight:700; color:#FFD700; margin:0.3rem 0 0 0; font-variant-numeric:tabular-nums;"></p>
-            <p style="font-size:0.85rem; color:#e0e0e0; margin:0.3rem 0 0 0;">{" &nbsp;|&nbsp; ".join(info_parts)}</p></div>
+            <p class="score" style="font-size:4.5rem; font-weight:900; color:#FFD700; margin:0; line-height:1; text-shadow:0 4px 8px rgba(0,0,0,0.4);">{match['team_1_score']} – {match['team_2_score']}</p>
+            <p id="match-clock" style="font-size:1.2rem; font-weight:700; color:#FFD700; margin:0.3rem 0 0 0; font-variant-numeric:tabular-nums; text-shadow:0 2px 4px rgba(0,0,0,0.3);"></p>
+            <p style="font-size:0.9rem; color:#e0e0e0; margin:0.3rem 0 0 0;">{" &nbsp;|&nbsp; ".join(info_parts)}</p></div>
             <div style="text-align:center; flex:1;">
-            <img src="{match['team_2_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
-            <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{match['team_2_name']}</span></div>
+            <img src="{match['team_2_logo']}" style="height:3.5rem; margin-bottom:0.5rem; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));"><br>
+            <span style="font-size:1.4rem; font-weight:700; color:#ffffff; text-shadow:0 2px 4px rgba(0,0,0,0.3);">{match['team_2_name']}</span></div>
             </div>
             <div class="mobile-layout" style="text-align:center;">
             <div style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-            <img src="{match['team_1_logo']}" style="height:1.8rem;">
-            <span style="font-size:0.9rem; font-weight:700; color:#fff;">{match['team_1_name']}</span>
-            <span style="font-size:0.75rem; color:#e0e0e0;">vs</span>
-            <img src="{match['team_2_logo']}" style="height:1.8rem;">
-            <span style="font-size:0.9rem; font-weight:700; color:#fff;">{match['team_2_name']}</span>
+            <img src="{match['team_1_logo']}" style="height:2rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+            <span style="font-size:1rem; font-weight:700; color:#fff;">{match['team_1_name']}</span>
+            <span style="font-size:0.8rem; color:#e0e0e0;">vs</span>
+            <img src="{match['team_2_logo']}" style="height:2rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+            <span style="font-size:1rem; font-weight:700; color:#fff;">{match['team_2_name']}</span>
             </div>
-            <p style="font-size:2.5rem; font-weight:900; color:#fff; margin:0; line-height:1;">{match['team_1_score']} – {match['team_2_score']}</p>
-            <p id="match-clock-m" style="font-size:1rem; font-weight:700; color:#FFD700; margin:0; font-variant-numeric:tabular-nums;"></p>
-            <p style="font-size:0.7rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{" &nbsp;|&nbsp; ".join(info_parts)}</p>
+            <p style="font-size:2.8rem; font-weight:900; color:#FFD700; margin:0; line-height:1; text-shadow:0 4px 8px rgba(0,0,0,0.4);">{match['team_1_score']} – {match['team_2_score']}</p>
+            <p id="match-clock-m" style="font-size:1.1rem; font-weight:700; color:#FFD700; margin:0; font-variant-numeric:tabular-nums; text-shadow:0 2px 4px rgba(0,0,0,0.3);"></p>
+            <p style="font-size:0.75rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{" &nbsp;|&nbsp; ".join(info_parts)}</p>
             </div>
             </div>
             </div>
@@ -500,8 +499,8 @@ def _live_section():
                         icon = ""
                     side_color = "#ffffff" if ev["side"] == 1 else "#e0e0e0"
                     _event_items.append(
-                        f'<span style="display:inline-block; margin:0.15rem 0.3rem; padding:0.2rem 0.5rem; '
-                        f'background:rgba(17,86,117,0.4); border-radius:6px; font-size:0.7rem; color:{side_color};">'
+                        f'<span style="display:inline-block; margin:0.15rem 0.3rem; padding:0.3rem 0.6rem; '
+                        f'background:linear-gradient(135deg, #0056b3 0%, #0077cc 100%); border-radius:8px; font-size:0.75rem; color:{side_color}; border:1px solid #FFD700;">'
                         f'{icon} {ev["minute"]} {ev["player"]}</span>'
                     )
                 _events_html = f'<div style="text-align:center; margin-top:0.6rem;">{"".join(_event_items)}</div>'
@@ -510,24 +509,24 @@ def _live_section():
                 f'<style>'
                 f'@keyframes statPop {{ from {{ opacity:0; transform:scale(0.8); }} to {{ opacity:1; transform:scale(1); }} }}'
                 f'@keyframes barGrow {{ from {{ width:0%; }} to {{ width:{_poss1}%; }} }}'
-                f'.stat-pill {{ display:inline-block; background:rgba(17,86,117,0.4); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); '
-                f'border:1px solid rgba(41,181,232,0.2); border-radius:20px; padding:0.4rem 1rem; margin:0.2rem; text-align:center; '
-                f'animation:statPop 0.5s ease backwards; min-width:80px; }}'
+                f'.stat-pill {{ display:inline-block; background:linear-gradient(135deg, #0056b3 0%, #0077cc 100%); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); '
+                f'border:2px solid #FFD700; border-radius:20px; padding:0.5rem 1.2rem; margin:0.2rem; text-align:center; '
+                f'animation:statPop 0.5s ease backwards; min-width:90px; box-shadow:0 4px 15px rgba(0,119,204,0.3); }}'
                 f'.stat-pill:nth-child(1) {{ animation-delay:0.1s; }}'
                 f'.stat-pill:nth-child(2) {{ animation-delay:0.2s; }}'
                 f'.stat-pill:nth-child(3) {{ animation-delay:0.3s; }}'
                 f'.stat-pill:nth-child(4) {{ animation-delay:0.4s; }}'
-                f'.stat-pill .val {{ font-size:1.2rem; font-weight:900; color:#FFD700; }}'
-                f'.stat-pill .lbl {{ font-size:0.6rem; color:#e0e0e0; text-transform:uppercase; letter-spacing:0.5px; }}'
+                f'.stat-pill .val {{ font-size:1.3rem; font-weight:900; color:#FFD700; text-shadow:0 2px 4px rgba(0,0,0,0.3); }}'
+                f'.stat-pill .lbl {{ font-size:0.65rem; color:#ffffff; text-transform:uppercase; letter-spacing:1px; font-weight:600; }}'
                 f'@media(max-width:768px){{ .stat-row .stat-left {{ justify-content:flex-end!important; }} .stat-row .stat-right {{ justify-content:flex-start!important; }} }}'
                 f'</style>'
-                f'<div style="background:rgba(17,86,117,0.2); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); '
-                f'border-radius:14px; padding:1rem 1.5rem; margin:0.5rem 0; border:1px solid rgba(41,181,232,0.15);">'
+                f'<div style="background:linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); '
+                f'border-radius:16px; padding:1.2rem 1.8rem; margin:0.5rem 0; border:2px solid #FFD700; box-shadow:0 8px 32px rgba(0,0,0,0.3);">'
                 f'<div style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin-bottom:0.8rem;">'
                 f'<div class="stat-pill"><div class="val">{_poss1:.0f}%</div><div class="lbl">Possession</div></div>'
-                f'<div style="display:flex; flex:1; height:8px; border-radius:4px; overflow:hidden; box-shadow:0 0 10px rgba(41,181,232,0.2);">'
-                f'<div style="width:{_poss1}%; background:linear-gradient(90deg, #29B5E8, #115675); transition:width 1s ease;"></div>'
-                f'<div style="width:{_poss2}%; background:rgba(255,255,255,0.2);"></div>'
+                f'<div style="display:flex; flex:1; height:10px; border-radius:5px; overflow:hidden; box-shadow:0 0 15px rgba(255,215,0,0.3); border:1px solid #FFD700;">'
+                f'<div style="width:{_poss1}%; background:linear-gradient(90deg, #FFD700 0%, #FFA500 100%); transition:width 1s ease;"></div>'
+                f'<div style="width:{_poss2}%; background:linear-gradient(90deg, #0077cc 0%, #0056b3 100%);"></div>'
                 f'</div>'
                 f'<div class="stat-pill"><div class="val">{_poss2:.0f}%</div><div class="lbl">Possession</div></div>'
                 f'</div>'
@@ -538,7 +537,7 @@ def _live_section():
                 f'<div class="stat-pill"><div class="val">{_corners1}</div><div class="lbl">Corners</div></div>'
                 f'<div class="stat-pill"><div class="val">{_fouls1}</div><div class="lbl">Fouls</div></div>'
                 f'</div>'
-                f'<div class="stat-divider" style="width:2px; height:50px; background:rgba(255,215,0,0.5); border-radius:1px; flex-shrink:0;"></div>'
+                f'<div class="stat-divider" style="width:3px; height:60px; background:linear-gradient(180deg, #FFD700 0%, #FFA500 100%); border-radius:2px; flex-shrink:0; box-shadow:0 0 10px rgba(255,215,0,0.5);"></div>'
                 f'<div class="stat-right" style="display:flex; gap:0.3rem; flex-wrap:wrap; justify-content:center;">'
                 f'<div class="stat-pill"><div class="val">{_shots2}</div><div class="lbl">Shots</div></div>'
                 f'<div class="stat-pill"><div class="val">{_sot2}</div><div class="lbl">On Target</div></div>'
@@ -564,7 +563,7 @@ def _live_section():
                     _next_match_time = None
                     
             st.markdown("---")
-            st.markdown('<h3 style="text-align:center;">Next Match</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 style="text-align:center; color:#FFD700; font-size:1.8rem; font-weight:800; text-shadow:0 2px 4px rgba(0,0,0,0.3);">Next Match</h3>', unsafe_allow_html=True)
             
             _target_iso = ""
             _countdown_active = False
@@ -592,47 +591,50 @@ def _live_section():
                     f'''<style>
                     .cd-card .desktop-layout {{ display:flex; }}
                     .cd-card .mobile-layout {{ display:none; }}
-                    .cd-card .card-header {{ background:linear-gradient(135deg, #0056b3 0%, #0d4a96 50%, #1a6bb5 100%); border-radius:20px 20px 0 0; padding:1rem 2rem; text-align:center; }}
+                    .cd-card .card-header {{ background:linear-gradient(135deg, #0056b3 0%, #0077cc 50%, #0099ff 100%); border-radius:20px 20px 0 0; padding:1.2rem 2rem; text-align:center; box-shadow:0 4px 20px rgba(0,119,204,0.3); }}
                     @media(max-width:768px){{
                     .cd-card{{padding:1rem!important}}
                     .cd-card .desktop-layout {{ display:none; }}
                     .cd-card .mobile-layout {{ display:block; }}
                     }}
                     </style>
-                    <div class="cd-card" style="background:rgba(17,86,117,0.25); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; margin:0; border:1px solid rgba(41,181,232,0.25); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; overflow:hidden;">
+                    <div class="cd-card" style="background:linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; margin:0; border:2px solid #FFD700; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
                     <div class="card-header">
-                    <p style="font-size:1.2rem; font-weight:700; color:#FFD700; margin:0; letter-spacing:1px;">⏰ NEXT MATCH COUNTDOWN</p>
+                    <p style="font-size:1.3rem; font-weight:700; color:#FFD700; margin:0; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,0.3);">⏰ NEXT MATCH COUNTDOWN</p>
                     </div>
                     <div style="padding:2rem 3rem;">
                     <div class="desktop-layout" style="justify-content:space-between; align-items:center;">
                     <div style="text-align:center; flex:1;">
-                    <img src="{next_match['team_1_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
-                    <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_1_name']}</span></div>
+                    <img src="{next_match['team_1_logo']}" style="height:3.5rem; margin-bottom:0.5rem; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));"><br>
+                    <span style="font-size:1.4rem; font-weight:700; color:#ffffff; text-shadow:0 2px 4px rgba(0,0,0,0.3);">{next_match['team_1_name']}</span></div>
                     <div style="text-align:center; flex:1;">
-                    <p id="cd" style="font-size:3.5rem; font-weight:900; color:#FFD700; margin:0; line-height:1; font-variant-numeric:tabular-nums;">--:--:--</p>
-                    <p style="font-size:0.85rem; color:#e0e0e0; margin:0.3rem 0 0 0;">{_info_line1}</p>
-                    <p style="font-size:0.85rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p></div>
+                    <p id="cd" style="font-size:4rem; font-weight:900; color:#FFD700; margin:0; line-height:1; font-variant-numeric:tabular-nums; text-shadow:0 4px 8px rgba(0,0,0,0.4);">--:--:--</p>
+                    <p style="font-size:0.9rem; color:#e0e0e0; margin:0.3rem 0 0 0;">{_info_line1}</p>
+                    <p style="font-size:0.9rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p></div>
                     <div style="text-align:center; flex:1;">
-                    <img src="{next_match['team_2_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
-                    <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_2_name']}</span></div>
+                    <img src="{next_match['team_2_logo']}" style="height:3.5rem; margin-bottom:0.5rem; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));"><br>
+                    <span style="font-size:1.4rem; font-weight:700; color:#ffffff; text-shadow:0 2px 4px rgba(0,0,0,0.3);">{next_match['team_2_name']}</span></div>
                     </div>
                     <div class="mobile-layout" style="text-align:center;">
                     <div style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-                    <img src="{next_match['team_1_logo']}" style="height:1.8rem;">
-                    <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_1_name']}</span>
+                    <img src="{next_match['team_1_logo']}" style="height:2rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                    <span style="font-size:1rem; font-weight:700; color:#fff;">{next_match['team_1_name']}</span>
                     <span style="font-size:0.8rem; color:#e0e0e0;">vs</span>
-                    <img src="{next_match['team_2_logo']}" style="height:1.8rem;">
-                    <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_2_name']}</span>
+                    <img src="{next_match['team_2_logo']}" style="height:2rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                    <span style="font-size:1rem; font-weight:700; color:#fff;">{next_match['team_2_name']}</span>
                     </div>
-                    <p id="cd-m" style="font-size:2.2rem; font-weight:900; color:#FFD700; margin:0; line-height:1.2; font-variant-numeric:tabular-nums;">--:--:--</p>
-                    <p style="font-size:0.7rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{_info_line1}</p>
-                    <p style="font-size:0.7rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p>
+                    <p id="cd-m" style="font-size:2.5rem; font-weight:900; color:#FFD700; margin:0; line-height:1.2; font-variant-numeric:tabular-nums; text-shadow:0 4px 8px rgba(0,0,0,0.4);">--:--:--</p>
+                    <p style="font-size:0.75rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{_info_line1}</p>
+                    <p style="font-size:0.75rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p>
                     </div>
                     </div>
                     </div>
                     <script>
                     (function(){{
-                    var target=new Date("{_target_iso}").getTime();
+                    var targetStr="{_target_iso}";
+                    if(!targetStr){{ console.error("No target date"); return; }}
+                    var target=new Date(targetStr).getTime();
+                    if(isNaN(target)){{ console.error("Invalid date:",targetStr); return; }}
                     var els=[document.getElementById("cd"),document.getElementById("cd-m")];
                     function tick(){{
                     var diff=Math.max(0,Math.floor((target-Date.now())/1000));
@@ -650,41 +652,41 @@ def _live_section():
                     @keyframes kickPulse {{ 0%{{opacity:1}} 50%{{opacity:0.5}} 100%{{opacity:1}} }}
                     .ko-card .desktop-layout {{ display:flex; }}
                     .ko-card .mobile-layout {{ display:none; }}
-                    .ko-card .card-header {{ background:linear-gradient(135deg, #0056b3 0%, #0d4a96 50%, #1a6bb5 100%); border-radius:20px 20px 0 0; padding:1rem 2rem; text-align:center; }}
+                    .ko-card .card-header {{ background:linear-gradient(135deg, #0056b3 0%, #0077cc 50%, #0099ff 100%); border-radius:20px 20px 0 0; padding:1.2rem 2rem; text-align:center; box-shadow:0 4px 20px rgba(0,119,204,0.3); }}
                     @media(max-width:768px){{
                     .ko-card{{padding:1rem!important}}
                     .ko-card .desktop-layout {{ display:none; }}
                     .ko-card .mobile-layout {{ display:block; }}
                     }}
                     </style>
-                    <div class="ko-card" style="background:rgba(17,86,117,0.25); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; margin:0; border:1px solid rgba(41,181,232,0.25); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; overflow:hidden;">
+                    <div class="ko-card" style="background:linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; margin:0; border:2px solid #FFD700; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
                     <div class="card-header">
-                    <p style="font-size:1.2rem; font-weight:700; color:#FFD700; margin:0; letter-spacing:1px;">⚽ KICKOFF IMMINENT</p>
+                    <p style="font-size:1.3rem; font-weight:700; color:#FFD700; margin:0; letter-spacing:1px; text-shadow:0 2px 4px rgba(0,0,0,0.3);">⚽ KICKOFF IMMINENT</p>
                     </div>
                     <div style="padding:2rem 3rem;">
                     <div class="desktop-layout" style="justify-content:space-between; align-items:center;">
                     <div style="text-align:center; flex:1;">
-                    <img src="{next_match['team_1_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
-                    <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_1_name']}</span></div>
+                    <img src="{next_match['team_1_logo']}" style="height:3.5rem; margin-bottom:0.5rem; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));"><br>
+                    <span style="font-size:1.4rem; font-weight:700; color:#ffffff; text-shadow:0 2px 4px rgba(0,0,0,0.3);">{next_match['team_1_name']}</span></div>
                     <div style="text-align:center; flex:1;">
-                    <p style="font-size:2rem; font-weight:900; color:#FFD700; margin:0; line-height:1; animation:kickPulse 1.5s infinite;">&#9917; KICKOFF</p>
-                    <p style="font-size:0.85rem; color:#e0e0e0; margin:0.3rem 0 0 0;">{_info_line1}</p>
-                    <p style="font-size:0.85rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p></div>
+                    <p style="font-size:2.2rem; font-weight:900; color:#FFD700; margin:0; line-height:1; animation:kickPulse 1.5s infinite; text-shadow:0 4px 8px rgba(0,0,0,0.4);">&#9917; KICKOFF</p>
+                    <p style="font-size:0.9rem; color:#e0e0e0; margin:0.3rem 0 0 0;">{_info_line1}</p>
+                    <p style="font-size:0.9rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p></div>
                     <div style="text-align:center; flex:1;">
-                    <img src="{next_match['team_2_logo']}" style="height:3rem; margin-bottom:0.5rem;"><br>
-                    <span style="font-size:1.3rem; font-weight:700; color:#ffffff;">{next_match['team_2_name']}</span></div>
+                    <img src="{next_match['team_2_logo']}" style="height:3.5rem; margin-bottom:0.5rem; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));"><br>
+                    <span style="font-size:1.4rem; font-weight:700; color:#ffffff; text-shadow:0 2px 4px rgba(0,0,0,0.3);">{next_match['team_2_name']}</span></div>
                     </div>
                     <div class="mobile-layout" style="text-align:center;">
-                    <p style="font-size:1.4rem; font-weight:900; color:#FFD700; margin:0 0 0.5rem 0; animation:kickPulse 1.5s infinite;">&#9917; KICKOFF</p>
+                    <p style="font-size:1.5rem; font-weight:900; color:#FFD700; margin:0 0 0.5rem 0; animation:kickPulse 1.5s infinite; text-shadow:0 4px 8px rgba(0,0,0,0.4);">&#9917; KICKOFF</p>
                     <div style="display:flex; justify-content:center; align-items:center; gap:0.8rem; margin-bottom:0.3rem;">
-                    <img src="{next_match['team_1_logo']}" style="height:1.8rem;">
-                    <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_1_name']}</span>
+                    <img src="{next_match['team_1_logo']}" style="height:2rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                    <span style="font-size:1rem; font-weight:700; color:#fff;">{next_match['team_1_name']}</span>
                     <span style="font-size:0.8rem; color:#e0e0e0;">vs</span>
-                    <img src="{next_match['team_2_logo']}" style="height:1.8rem;">
-                    <span style="font-size:0.95rem; font-weight:700; color:#fff;">{next_match['team_2_name']}</span>
+                    <img src="{next_match['team_2_logo']}" style="height:2rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                    <span style="font-size:1rem; font-weight:700; color:#fff;">{next_match['team_2_name']}</span>
                     </div>
-                    <p style="font-size:0.7rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{_info_line1}</p>
-                    <p style="font-size:0.7rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p>
+                    <p style="font-size:0.75rem; color:#e0e0e0; margin:0.2rem 0 0 0;">{_info_line1}</p>
+                    <p style="font-size:0.75rem; color:#e0e0e0; margin:0.1rem 0 0 0;">{_info_line2}</p>
                     </div>
                     </div>
                     </div>'''
